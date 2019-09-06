@@ -17,10 +17,10 @@ export default class graph extends Component {
                     opacity = "1"
                         data={[
                             { x: 1, y: 1 },
-                            { x: 2, y: 2 },
-                            { x: 3, y:3 },
+                            { x: 3, y: 5 },
+                            { x: 4, y:7 },
                             { x: 4, y: 4},
-                            { x: -5, y: -5},
+                            { x: 10, y: 5},
                             { x: 2, y: 10}
                         ]} />
                     <XAxis />
