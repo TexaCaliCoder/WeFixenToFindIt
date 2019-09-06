@@ -1,11 +1,11 @@
 import React from 'react';
 import './App.scss';
-
+import Home from './views/home/Home';
 
 function App() {
 	return (
-        <div className='App'>
-            <h1>Lambda Treasure Hunt</h1>
+		<div className='App'>
+			<Home />
 		</div>
 	);
 }
