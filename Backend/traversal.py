@@ -58,7 +58,7 @@ def traversal(player, graph):
     ## ITEM GET
     while purpose == 'item get':
       if time <= 0:
-        received_item = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/take/', headers={'Authorization': api_key[room]}, json={"name":item_to_get})
+        received_item = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/take/', headers=header_info, json={"name":item_to_get})
         time = received_item['cooldown']
         purpose = 'item lookup'
 
