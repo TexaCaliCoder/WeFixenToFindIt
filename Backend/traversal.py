@@ -20,7 +20,6 @@ header_info = {'Authorization': api_key}
   # "Token 64936db353e36faa7ec880bb81331706cd4216a7"
 timer = {'time': 0, 'purpose': 'move purposefully'}
 room_info = requests.get('https://lambda-treasure-hunt.herokuapp.com/api/adv/init/', headers=header_info).json()
-print(room_info)
 new_time = countdown_setup(room_info['cooldown'])
 timer['time'] = new_time
 # item_to_get = ''
@@ -189,17 +188,20 @@ def traversal():
           if "w" not in new_room["exits"]:
             requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(new_room['room_id']) + '/', json={'w': -100}).json()
           room_info = dict(new_room)
-        elif len(visited_rooms) <= 500:
+        elif len(visited_rooms) >= 500:
+          print("we're done here")
           purpose = 'move randomly'
         else:
-          last_open = nearest_open_path(c_rm.id)
-          follow_path(c_rm["room_id"], last_open["curr_path"])
+          print('going to find a new way around from room #', c_rm['room_id'])
+          last_open = nearest_open_path(c_rm["room_id"])
+          follow_path(c_rm["room_id"], last_open["path"])
         print("through")
 
 
 
 # This is the breadth first search for a room that still has openings
 def nearest_open_path(start):
+  print('finding nearest')
   visited_paths = get_room_dict()
   queue = Queue()
   queue.enqueue({"room": start, "path": []})
@@ -220,20 +222,22 @@ def nearest_open_path(start):
         elif d[0] == -100:
           pass
         else:
-          curr_path['path'].append(d[0])
+          curr_path['path'].append(d[1])
           return {"room": curr_room, "path": curr_path["path"]}
 
 # go to a location
 def follow_path(start, path):
+  print('following known path', path)
   rooms_avail = get_room_dict()
   while len(path) > 0:
     if timecheck():
       next_dir = path.pop()
-      json_dir = {"direction": next_dir}
+      this_move = {"direction": next_dir}
       if start in rooms_avail:
         if rooms_avail[start][next_dir] > 0:
-          json_dir["next_room_id"] = rooms_avail[start][next_dir]
-      new_room = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', headers=header_info, json=json_dir).json()
+          this_move["next_room_id"] = str(rooms_avail[start][next_dir])
+      print(this_move)
+      new_room = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', headers=header_info, json=this_move).json()
       timer['time'] = countdown_setup(new_room["cooldown"])
 
 def get_room_dict():
