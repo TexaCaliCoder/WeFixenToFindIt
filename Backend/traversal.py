@@ -21,7 +21,6 @@ item_to_get = ''
 def traversal(player, graph):
   # get room info to use for ```player```
   rooms_to_visit = True
-  visited_rooms = set()
   ## I don't think the following in valid. We are adding the rooms in as part of decision tree
   # for rooms in room_info:
   #   visited_rooms.add(room_info[rooms]['room_id'])
@@ -31,8 +30,6 @@ def traversal(player, graph):
     purpose = timer['purpose']
     user = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/status/', headers=header_info)
     timer['time'] = countdown_setup(user['cooldown'])
-    ## TODO post user status into our version of user
-    ## TODO post room data into our version of the room
 
     ## for each user, check
     ## - purpose of timer - tells us which actions we are performing
@@ -45,7 +42,7 @@ def traversal(player, graph):
         purpose = 'move randomly'
       ## check the timer
       if timecheck():
-      ## TODO get the info from our database for the room we are in
+        ## TODO get the info from our database for the room we are in
         for item in room_info['items']:
           item_name = {"name": item['name']}
           pickup = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/examine/', headers=header_info, json=item_name)
@@ -92,6 +89,7 @@ def traversal(player, graph):
     ## check timer again
     while purpose == 'move purposefully':
       if timecheck():
+        visited_rooms = requests.get("https://wegunnagetit.herokuapp.com/rooms/")
         c_rm = room_info
         ## TODO add in exits info from database version of the room
         c_rm_n = True if 'n' in room_info['exits'] else False
@@ -101,39 +99,73 @@ def traversal(player, graph):
 
         if c_rm_n and c_rm['room_id'] not in visited_rooms:
           visited_rooms.add(c_rm['room_id'])
+          old_room = c_rm['room_id']
           new_room = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', headers=header_info, json={"direction":"n"})
           timer['time'] = countdown_setup(new_room["cooldown"])
-          ## TODO add post command to add the new room and add the "s" of the new room in our database to the old room id
-          ## TODO add put command to change the "n" of the old room in our database
+          db_send = {
+            "id": new_room["room_id"],
+            "coordinates": new_room["coordinates"],
+            "name": new_room["title"],
+            "description": new_room["description"],
+          }
+          ## post new room to db and change directions of new room and old room to reflect new info
+          requests.post("https://wegunnagetit.herokuapp.com/rooms/", json=db_send)
+          requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(old_room) + '/', json={'n': new_room['room_id']})
+          requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(new_room['room_id']) + '/', json={'s': old_room})
           room_info = dict(new_room)
         elif c_rm_e and c_rm['room_id'] not in visited_rooms:
           visited_rooms.add(c_rm['room_id'])
-          requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', headers=header_info, json={"direction":"e"})
+          old_room = c_rm['room_id']
+          new_room = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', headers=header_info, json={"direction":"e"})
           timer['time'] = countdown_setup(new_room["cooldown"])
-          ## TODO add post command to add the new room and add the "w" of the new room in our database to the old room id
-          ## TODO add put command to change the "e" of the old room in our database
+          db_send = {
+            "id": new_room["room_id"],
+            "coordinates": new_room["coordinates"],
+            "name": new_room["title"],
+            "description": new_room["description"],
+          }
+          ## post new room to db and change directions of new room and old room to reflect new info
+          requests.post("https://wegunnagetit.herokuapp.com/rooms/", json=db_send)
+          requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(old_room) + '/', json={'e': new_room['room_id']})
+          requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(new_room['room_id']) + '/', json={'w': old_room})
           room_info = dict(new_room)
         elif c_rm_s and c_rm['room_id'] not in visited_rooms:
           visited_rooms.add(c_rm['room_id'])
-          requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', headers=header_info, json={"direction":"s"})
+          old_room = c_rm['room_id']
+          new_room = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', headers=header_info, json={"direction":"s"})
           timer['time'] = countdown_setup(new_room["cooldown"])
-          ## TODO add post command to add the new room and add the "n" of the new room in our database to the old room id
-          ## TODO add put command to change the "s" of the old room in our database
+          db_send = {
+            "id": new_room["room_id"],
+            "coordinates": new_room["coordinates"],
+            "name": new_room["title"],
+            "description": new_room["description"],
+          }
+          ## post new room to db and change directions of new room and old room to reflect new info
+          requests.post("https://wegunnagetit.herokuapp.com/rooms/", json=db_send)
+          requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(old_room) + '/', json={'s': new_room['room_id']})
+          requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(new_room['room_id']) + '/', json={'n': old_room})
           room_info = dict(new_room)
         elif c_rm_w and c_rm['room_id'] not in visited_rooms:
           visited_rooms.add(c_rm['room_id'])
-          requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', headers=header_info, json={"direction":"w"})
+          old_room = c_rm['room_id']
+          new_room = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', headers=header_info, json={"direction":"w"})
           timer['time'] = countdown_setup(new_room["cooldown"])
-          ## TODO add post command to add the new room and add the "e" of the new room in our database to the old room id
-          ## TODO add put command to change the "w" of the old room in our database
+          db_send = {
+            "id": new_room["room_id"],
+            "coordinates": new_room["coordinates"],
+            "name": new_room["title"],
+            "description": new_room["description"],
+          }
+          ## post new room to db and change directions of new room and old room to reflect new info
+          requests.post("https://wegunnagetit.herokuapp.com/rooms/", json=db_send)
+          requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(old_room) + '/', json={'w': new_room['room_id']})
+          requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(new_room['room_id']) + '/', json={'e': old_room})
           room_info = dict(new_room)
-        elif len(visited_rooms) == 500:
+        elif len(visited_rooms) <= 500:
           purpose = 'move randomly'
         else:
           last_open = nearest_open_path(c_rm.id, graph, visited_rooms)
-          for d in last_open['path']:
-            traversalPath.append(d)
-            player.travel(d)
+          goto_location(last_open["room"], last_open["curr_path"])
 
 
 def countdown_setup(cooldown):
@@ -164,7 +196,13 @@ def nearest_open_path(start, graph, visited):
             else:
               return {"room": curr_room, "path": curr_path["path"]}
 
-# go to shop and sell items
+# go to a location
+def goto_location(room_id, path):
+  while len(path) > 0:
+    if timecheck():
+      next_dir = path.pop()
+      new_room = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', headers=header_info, json={"direction":next_dir})
+      timer['time'] = countdown_setup(new_room["cooldown"])
 
 
 class Queue():
@@ -179,4 +217,3 @@ class Queue():
             return None
     def size(self):
         return len(self.queue)
-
