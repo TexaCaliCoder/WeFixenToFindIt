@@ -89,16 +89,16 @@ def traversal(player, graph):
     ## check timer again
     while purpose == 'move purposefully':
       if timecheck():
-        visited_rooms = requests.get("https://wegunnagetit.herokuapp.com/rooms/")
+        visited_rooms = get_room_dict()
+
         c_rm = room_info
         ## TODO add in exits info from database version of the room
-        c_rm_n = True if 'n' in room_info['exits'] else False
-        c_rm_s = True if 's' in room_info['exits'] else False
-        c_rm_e = True if 'e' in room_info['exits'] else False
-        c_rm_w = True if 'w' in room_info['exits'] else False
+        c_rm_n = True if 'n' in room_info['exits'] and visited_rooms[c_rm['room_id']]['n'] < 0 else False
+        c_rm_s = True if 's' in room_info['exits'] and visited_rooms[c_rm['room_id']]['s'] < 0 else False
+        c_rm_e = True if 'e' in room_info['exits'] and visited_rooms[c_rm['room_id']]['e'] < 0 else False
+        c_rm_w = True if 'w' in room_info['exits'] and visited_rooms[c_rm['room_id']]['w'] < 0 else False
 
-        if c_rm_n and c_rm['room_id'] not in visited_rooms:
-          visited_rooms.add(c_rm['room_id'])
+        if c_rm_n:
           old_room = c_rm['room_id']
           new_room = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', headers=header_info, json={"direction":"n"})
           timer['time'] = countdown_setup(new_room["cooldown"])
@@ -113,8 +113,7 @@ def traversal(player, graph):
           requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(old_room) + '/', json={'n': new_room['room_id']})
           requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(new_room['room_id']) + '/', json={'s': old_room})
           room_info = dict(new_room)
-        elif c_rm_e and c_rm['room_id'] not in visited_rooms:
-          visited_rooms.add(c_rm['room_id'])
+        elif c_rm_e:
           old_room = c_rm['room_id']
           new_room = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', headers=header_info, json={"direction":"e"})
           timer['time'] = countdown_setup(new_room["cooldown"])
@@ -129,8 +128,7 @@ def traversal(player, graph):
           requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(old_room) + '/', json={'e': new_room['room_id']})
           requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(new_room['room_id']) + '/', json={'w': old_room})
           room_info = dict(new_room)
-        elif c_rm_s and c_rm['room_id'] not in visited_rooms:
-          visited_rooms.add(c_rm['room_id'])
+        elif c_rm_s:
           old_room = c_rm['room_id']
           new_room = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', headers=header_info, json={"direction":"s"})
           timer['time'] = countdown_setup(new_room["cooldown"])
@@ -145,8 +143,7 @@ def traversal(player, graph):
           requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(old_room) + '/', json={'s': new_room['room_id']})
           requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(new_room['room_id']) + '/', json={'n': old_room})
           room_info = dict(new_room)
-        elif c_rm_w and c_rm['room_id'] not in visited_rooms:
-          visited_rooms.add(c_rm['room_id'])
+        elif c_rm_w:
           old_room = c_rm['room_id']
           new_room = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', headers=header_info, json={"direction":"w"})
           timer['time'] = countdown_setup(new_room["cooldown"])
@@ -165,7 +162,7 @@ def traversal(player, graph):
           purpose = 'move randomly'
         else:
           last_open = nearest_open_path(c_rm.id, graph, visited_rooms)
-          goto_location(last_open["room"], last_open["curr_path"])
+          follow_path(c_rm["room_id"], last_open["curr_path"])
 
 
 def countdown_setup(cooldown):
@@ -197,13 +194,25 @@ def nearest_open_path(start, graph, visited):
               return {"room": curr_room, "path": curr_path["path"]}
 
 # go to a location
-def goto_location(room_id, path):
+def follow_path(start, path):
+  rooms_avail = get_room_dict()
   while len(path) > 0:
     if timecheck():
       next_dir = path.pop()
-      new_room = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', headers=header_info, json={"direction":next_dir})
+      json_dir = {"direction": next_dir}
+      if start in rooms_avail:
+        if rooms_avail[start][next_dir] > 0:
+          json_dir["next_room_id"] = rooms_avail[start][next_dir]
+      new_room = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', headers=header_info, json=json_dir)
       timer['time'] = countdown_setup(new_room["cooldown"])
 
+def get_room_dict():
+  room_dict = {}
+  room_list = requests.get("https://wegunnagetit.herokuapp.com/rooms/")
+  for room in room_list:
+    room_dict[room['id']] = room
+
+  return room_dict
 
 class Queue():
     def __init__(self):
