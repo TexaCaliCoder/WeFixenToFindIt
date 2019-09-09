@@ -12,6 +12,13 @@ from datetime import datetime, timedelta
 def countdown_setup(cooldown):
   return datetime.now() + timedelta(seconds=cooldown)
 
+def get_room_dict():
+  room_dict = {}
+  room_list = requests.get("https://wegunnagetit.herokuapp.com/rooms/").json()
+  for room in room_list:
+    room_dict[room['id']] = room
+
+  return room_dict
 
 api_key = "Token 508711f53445fa67d8bdc1c97da256eacaef2e5e"
 header_info = {'Authorization': api_key}
@@ -22,8 +29,19 @@ timer = {'time': 0, 'purpose': 'move purposefully'}
 room_info = requests.get('https://lambda-treasure-hunt.herokuapp.com/api/adv/init/', headers=header_info).json()
 new_time = countdown_setup(room_info['cooldown'])
 timer['time'] = new_time
+
 # item_to_get = ''
 
+rooms_we_have = get_room_dict()
+
+if room_info['room_id'] not in rooms_we_have:
+  db_send = {
+    "id": room_info["room_id"],
+    "coordinates": room_info["coordinates"],
+    "name": room_info["title"],
+    "description": room_info["description"],
+  }
+  requests.post("https://wegunnagetit.herokuapp.com/rooms/", json=db_send).json()
 
 def timecheck():
   if timer['time'] < datetime.now():
@@ -194,7 +212,7 @@ def traversal():
         else:
           print('going to find a new way around from room #', c_rm['room_id'])
           last_open = nearest_open_path(c_rm["room_id"])
-          follow_path(c_rm["room_id"], last_open["path"])
+          room_info = follow_path(c_rm["room_id"], last_open["path"])
         print("through")
 
 
@@ -229,6 +247,7 @@ def nearest_open_path(start):
 def follow_path(start, path):
   print('following known path', path)
   rooms_avail = get_room_dict()
+  final_room = None
   while len(path) > 0:
     if timecheck():
       next_dir = path.pop()
@@ -239,14 +258,10 @@ def follow_path(start, path):
       print(this_move)
       new_room = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', headers=header_info, json=this_move).json()
       timer['time'] = countdown_setup(new_room["cooldown"])
+      final_room = dict(new_room)
 
-def get_room_dict():
-  room_dict = {}
-  room_list = requests.get("https://wegunnagetit.herokuapp.com/rooms/").json()
-  for room in room_list:
-    room_dict[room['id']] = room
+  return final_room
 
-  return room_dict
 
 def add_new_room(old, new, db_send, dir_trav, opp_dir_trav):
     requests.post("https://wegunnagetit.herokuapp.com/rooms/", json=db_send).json()
