@@ -303,6 +303,8 @@ def follow_path(start, path):
         requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(new_room['room_id']) + '/', json={'s': -100}).json()
       if "w" not in new_room["exits"]:
         requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(new_room['room_id']) + '/', json={'w': -100}).json()
+      if "e" not in new_room["exits"]:
+        requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(new_room['room_id']) + '/', json={'e': -100}).json()
       print('traveling back through room', new_room['room_id'])
       start = new_room['room_id']
       final_room = dict(new_room)
