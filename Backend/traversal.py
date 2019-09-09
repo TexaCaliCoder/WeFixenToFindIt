@@ -123,6 +123,16 @@ def traversal():
       if timecheck():
         visited_rooms = get_room_dict()
 
+        if room_info['room_id'] not in visited_rooms:
+          db_send = {
+            "id": room_info["room_id"],
+            "coordinates": room_info["coordinates"],
+            "name": room_info["title"],
+            "description": room_info["description"],
+          }
+          requests.post("https://wegunnagetit.herokuapp.com/rooms/", json=db_send).json()
+          visited_rooms = get_room_dict()
+
         c_rm = room_info
         ## TODO add in exits info from database version of the room
         c_rm_n = True if 'n' in room_info['exits'] and visited_rooms[c_rm['room_id']]['n'] < 0 else False
@@ -141,7 +151,10 @@ def traversal():
             "description": new_room["description"],
           }
           ## post new room to db and change directions of new room and old room to reflect new info
-          add_new_room(old_room, new_room['room_id'], db_send, "n", "s")
+          if new_room['room_id'] not in visited_rooms:
+            add_new_room(old_room, new_room['room_id'], db_send, "n", "s", True)
+          else:
+            add_new_room(old_room, new_room['room_id'], db_send, "n", "s", False)
           if "n" not in new_room["exits"]:
             requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(new_room['room_id']) + '/', json={'n': -100}).json()
           if "e" not in new_room["exits"]:
@@ -160,7 +173,10 @@ def traversal():
             "description": new_room["description"],
           }
           ## post new room to db and change directions of new room and old room to reflect new info
-          add_new_room(old_room, new_room['room_id'], db_send, "e", "w")
+          if new_room['room_id'] not in visited_rooms:
+            add_new_room(old_room, new_room['room_id'], db_send, "e", "w", True)
+          else:
+            add_new_room(old_room, new_room['room_id'], db_send, "e", "w", False)
           if "n" not in new_room["exits"]:
             requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(new_room['room_id']) + '/', json={'n': -100}).json()
           if "e" not in new_room["exits"]:
@@ -179,7 +195,10 @@ def traversal():
             "description": new_room["description"],
           }
           ## post new room to db and change directions of new room and old room to reflect new info
-          add_new_room(old_room, new_room['room_id'], db_send, "s", "n")
+          if new_room['room_id'] not in visited_rooms:
+            add_new_room(old_room, new_room['room_id'], db_send, "s", "n", True)
+          else:
+            add_new_room(old_room, new_room['room_id'], db_send, "s", "n", False)
           if "s" not in new_room["exits"]:
             requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(new_room['room_id']) + '/', json={'s': -100}).json()
           if "e" not in new_room["exits"]:
@@ -198,7 +217,10 @@ def traversal():
             "description": new_room["description"],
           }
           ## post new room to db and change directions of new room and old room to reflect new info
-          add_new_room(old_room, new_room['room_id'], db_send, "w", "e")
+          if new_room['room_id'] not in visited_rooms:
+            add_new_room(old_room, new_room['room_id'], db_send, "w", "e", True)
+          else:
+            add_new_room(old_room, new_room['room_id'], db_send, "w", "e", False)
           if "n" not in new_room["exits"]:
             requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(new_room['room_id']) + '/', json={'n': -100}).json()
           if "s" not in new_room["exits"]:
@@ -213,7 +235,6 @@ def traversal():
           print('going to find a new way around from room #', c_rm['room_id'])
           last_open = nearest_open_path(c_rm["room_id"])
           room_info = follow_path(c_rm["room_id"], last_open["path"])
-        print("through")
 
 
 
@@ -248,26 +269,45 @@ def follow_path(start, path):
   print('following known path', path)
   rooms_avail = get_room_dict()
   final_room = None
+  direction_possibilities = {
+    'n': 's',
+    's': 'n',
+    'e': 'w',
+    'w': 'e'
+  }
   while len(path) > 0:
     if timecheck():
       next_dir = path.pop()
       this_move = {"direction": next_dir}
       if start in rooms_avail:
-        if rooms_avail[start][next_dir] > 0:
+        if rooms_avail[start][next_dir] >= 0:
           this_move["next_room_id"] = str(rooms_avail[start][next_dir])
       print(this_move)
       new_room = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', headers=header_info, json=this_move).json()
       timer['time'] = countdown_setup(new_room["cooldown"])
+      db_send = {
+        "id": new_room["room_id"],
+        "coordinates": new_room["coordinates"],
+        "name": new_room["title"],
+        "description": new_room["description"],
+      }
+      if new_room['room_id'] not in rooms_avail:
+        add_new_room(start, new_room['room_id'], db_send, next_dir, direction_possibilities[next_dir], True)
+      else:
+        add_new_room(start, new_room['room_id'], db_send, next_dir, direction_possibilities[next_dir], False)
+      start = new_room['room_id']
       final_room = dict(new_room)
 
   return final_room
 
 
-def add_new_room(old, new, db_send, dir_trav, opp_dir_trav):
-    requests.post("https://wegunnagetit.herokuapp.com/rooms/", json=db_send).json()
+def add_new_room(old, new, db_send, dir_trav, opp_dir_trav, room_bool):
+    if room_bool:
+      requests.post("https://wegunnagetit.herokuapp.com/rooms/", json=db_send).json()
+      print('added room', new)
     requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(old) + '/', json={dir_trav: new}).json()
     requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(new) + '/', json={opp_dir_trav: old}).json()
-    print('added room', new)
+    print('changed room directions', new, '&', old)
 
 class Queue():
     def __init__(self):
