@@ -31,7 +31,8 @@ api_key = "Token 508711f53445fa67d8bdc1c97da256eacaef2e5e"
 header_info = {'Authorization': api_key}
   # "Token dccec1ad173d2abaf88b542a02095f8d93ea97df",
   # "Token 8271c9035b3a113a16111392722a7bb4d9278a2c",
-  # "Token 64936db353e36faa7ec880bb81331706cd4216a7"
+  # "Token 64936db353e36faa7ec880bb81331706cd4216a7",
+  # "Token 508711f53445fa67d8bdc1c97da256eacaef2e5e"
 timer = {'time': 0, 'purpose': 'move randomly'}
 room_info = requests.get('https://lambda-treasure-hunt.herokuapp.com/api/adv/init/', headers=header_info).json()
 new_time = countdown_setup(room_info['cooldown'])
@@ -321,7 +322,6 @@ def nearest_open_path(start):
   found_path = False
   while not found_path:
       curr_path = queue.dequeue()
-      print(curr_path)
       curr_room = curr_path["room"]
       path_n = [visited_paths[curr_room]['n'], 'n']
       path_s = [visited_paths[curr_room]['s'], 's']
