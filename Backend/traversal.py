@@ -232,6 +232,7 @@ def traversal():
           room_info = dict(new_room)
         elif len(visited_rooms) >= 500:
           print("we're done here")
+          rooms_to_visit = False
           purpose = 'move randomly'
         else:
           print('going to find a new way around from room #', c_rm['room_id'])
