@@ -1,6 +1,7 @@
 import requests
 import random
 from datetime import datetime, timedelta
+import time
 
 # traversalPath = []
 # '''
@@ -67,52 +68,86 @@ def traversal():
   #   visited_rooms.add(room_info[rooms]['room_id'])
   while rooms_to_visit:
 
-    purpose = timer['purpose']
-    user = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/status/', headers=header_info).json()
-    timer['time'] = countdown_setup(user['cooldown'])
+    purpose = "move randomly"
 
     ## for each user, check
     ## - purpose of timer - tells us which actions we are performing
     ## - see if timer time has reached zero
+    def get_user():
+      while True:
+        if timecheck():
+          user = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/status/', headers=header_info).json()
+          time.sleep(user['cooldown'])
+          return user
+
+    def update_room_info():
+      global room_info
+      while True:
+        if timecheck():
+          room_info = requests.get('https://lambda-treasure-hunt.herokuapp.com/api/adv/init/', headers=header_info).json()
+          time.sleep(room_info['cooldown'])
+          return
 
     ## ITEM LOOKUP
 
-    while purpose == "item lookup":
-      if len(room_info['items']) == 0:
-        purpose = 'move randomly'
-      ## check the timer
-      if timecheck():
-        ## TODO get the info from our database for the room we are in
-        for item in room_info['items']:
-          item_name = {"name": item['name']}
+    def item_lookup():
+      global item_to_get
+      while True:
+        if len(room_info['items']) == 0:
+          print('there is nothing left here')
+          return
+
+        ## check the timer
+        if timecheck():
+          user = get_user()
+
+          ## TODO get the info from our database for the room we are in
+          item = room_info['items'][0]
+          item_name = {"name": item}
           pickup = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/examine/', headers=header_info, json=item_name).json()
           timer['time'] = countdown_setup(pickup['cooldown'])
+          print("there is a", pickup['name'])
           if pickup['weight'] + user['encumbrance'] <= user['strength']:
             item_to_get = pickup['name']
             items_onboard.append(item_to_get)
-            purpose = 'item get'
+            item_get()
+            update_room_info()
           else:
             shop_path = shortest_path_to(shop, room_info['room_id'])
             follow_path(room_info['room_id'], shop_path['path'])
-            purpose = 'sell goods'
+            print('going to sell goods')
+            sell_items()
+            return
 
-    while purpose == 'sell goods':
-      confirm = 'no'
-      item_to_sell = ""
-      if timecheck():
-        if len(items_onboard) == 0:
-          purpose = "move randomly"
-        elif confirm == "no":
-          item_to_sell = items_onboard.pop()
-          sale = {"name": item_to_sell}
-          merchant = requests.post("https://lambda-treasure-hunt.herokuapp.com/api/adv/sell/", headers=header_info, json=sale).json()
-          timer = countdown_setup(merchant["cooldown"])
-          confirm = "yes"
-        else:
-          sale = {"name": item_to_sell, "confirm": "yes"}
-          merchant = requests.post("https://lambda-treasure-hunt.herokuapp.com/api/adv/sell/", headers=header_info, json=sale).json()
-          timer = countdown_setup(merchant["cooldown"])
-          confirm = 'no'
+    ## ITEM GET
+    def item_get():
+      while True:
+        if timecheck():
+          received_item = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/take/', headers=header_info, json={"name":item_to_get}).json()
+          timer['time'] = countdown_setup(received_item['cooldown'])
+          print('picked up the', item_to_get)
+          return
+
+    def sell_items():
+      global timer
+      while True:
+        confirm = 'no'
+        item_to_sell = ""
+        if timecheck():
+          if len(items_onboard) == 0:
+            return
+          elif confirm == "no":
+            item_to_sell = items_onboard.pop()
+            sale = {"name": item_to_sell}
+            merchant = requests.post("https://lambda-treasure-hunt.herokuapp.com/api/adv/sell/", headers=header_info, json=sale).json()
+            timer = countdown_setup(merchant["cooldown"])
+            print('sold the', item_to_sell, merchant["messages"])
+            confirm = "yes"
+          else:
+            sale = {"name": item_to_sell, "confirm": "yes"}
+            merchant = requests.post("https://lambda-treasure-hunt.herokuapp.com/api/adv/sell/", headers=header_info, json=sale).json()
+            timer = countdown_setup(merchant["cooldown"])
+            confirm = 'no'
 
 
     while purpose == "move randomly":
@@ -140,20 +175,18 @@ def traversal():
       move = random.choice(possible_moves)
 
       if timecheck():
+
         next_room = rooms_we_have[c_rm['room_id']][move]
-        db_send = {"direction": move, "next_room_id": next_room} if next_room > -1 else {"direction": move}
+        db_send = {"direction": move, "next_room_id": str(next_room)} if next_room > -1 else {"direction": move}
         new_room = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', headers=header_info, json=db_send).json()
+        print("moved to", new_room['room_id'])
         timer['time'] = countdown_setup(new_room['cooldown'])
+        room_info = dict(new_room)
         if next_room == -1:
           add_new_room(c_rm['room_id'], new_room['room_id'], {}, move, direction_possibilities[move], False)
-        purpose == "item lookup"
+        purpose = "item lookup"
+        item_lookup()
 
-    ## ITEM GET
-    while purpose == 'item get':
-      if timecheck():
-        received_item = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/take/', headers=header_info, json={"name":item_to_get}).json()
-        timer['time'] = countdown_setup(received_item['cooldown'])
-        purpose = 'item lookup'
 
     ## DIRECTION DECISION TREE
     ## check timer again
