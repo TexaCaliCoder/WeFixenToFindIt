@@ -135,10 +135,10 @@ def traversal():
 
         c_rm = room_info
         ## TODO add in exits info from database version of the room
-        c_rm_n = True if 'n' in room_info['exits'] and visited_rooms[c_rm['room_id']]['n'] < 0 else False
-        c_rm_s = True if 's' in room_info['exits'] and visited_rooms[c_rm['room_id']]['s'] < 0 else False
-        c_rm_e = True if 'e' in room_info['exits'] and visited_rooms[c_rm['room_id']]['e'] < 0 else False
-        c_rm_w = True if 'w' in room_info['exits'] and visited_rooms[c_rm['room_id']]['w'] < 0 else False
+        c_rm_n = True if 'n' in room_info['exits'] and visited_rooms[c_rm['room_id']]['n'] < 0 and visited_rooms[c_rm['room_id']]['n'] > -100 else False
+        c_rm_s = True if 's' in room_info['exits'] and visited_rooms[c_rm['room_id']]['s'] < 0 and visited_rooms[c_rm['room_id']]['s'] > -100 else False
+        c_rm_e = True if 'e' in room_info['exits'] and visited_rooms[c_rm['room_id']]['e'] < 0 and visited_rooms[c_rm['room_id']]['e'] > -100 else False
+        c_rm_w = True if 'w' in room_info['exits'] and visited_rooms[c_rm['room_id']]['w'] < 0 and visited_rooms[c_rm['room_id']]['w'] > -100 else False
 
         if c_rm_n:
           old_room = c_rm['room_id']
@@ -256,12 +256,11 @@ def nearest_open_path(start):
       for d in dirs:
         if d[0] > -1:
           new_path = {"room": d[0], "path": list(curr_path["path"])}
-          new_path["path"].append(d[1])
+          new_path["path"].insert(0, d[1])
           queue.enqueue(new_path)
-        elif d[0] == -100:
-          pass
-        else:
-          curr_path['path'].append(d[1])
+        elif d[0] == -1:
+          curr_path['path'].insert(0, d[1])
+          print("going this way", curr_path['path'])
           return {"room": curr_room, "path": curr_path["path"]}
 
 # go to a location
@@ -295,6 +294,7 @@ def follow_path(start, path):
         add_new_room(start, new_room['room_id'], db_send, next_dir, direction_possibilities[next_dir], True)
       else:
         add_new_room(start, new_room['room_id'], db_send, next_dir, direction_possibilities[next_dir], False)
+      print('traveling back through room', new_room['room_id'])
       start = new_room['room_id']
       final_room = dict(new_room)
 
@@ -302,12 +302,13 @@ def follow_path(start, path):
 
 
 def add_new_room(old, new, db_send, dir_trav, opp_dir_trav, room_bool):
-    if room_bool:
-      requests.post("https://wegunnagetit.herokuapp.com/rooms/", json=db_send).json()
-      print('added room', new)
-    requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(old) + '/', json={dir_trav: new}).json()
-    requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(new) + '/', json={opp_dir_trav: old}).json()
-    print('changed room directions', new, '&', old)
+    if old != new:
+      if room_bool:
+        requests.post("https://wegunnagetit.herokuapp.com/rooms/", json=db_send).json()
+        print('added room', new)
+      requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(old) + '/', json={dir_trav: new}).json()
+      requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(new) + '/', json={opp_dir_trav: old}).json()
+      print('changed room directions', new, '&', old)
 
 class Queue():
     def __init__(self):
