@@ -6,7 +6,7 @@ import time
 
 # leave "Token" keyword and change to your api key below
 # You must have a name and be in the right room to mine or you will incur a penalty
-api_key = "Token 8271c9035b3a113a16111392722a7bb4d9278a2c"
+api_key = "Token 508711f53445fa67d8bdc1c97da256eacaef2e5e"
 header_info = {'Authorization': api_key,"Content-Type": "application/json" }
 
 def proof_of_work(last_proof,difficulty):
@@ -23,7 +23,7 @@ def proof_of_work(last_proof,difficulty):
     return proof
 
 def valid_proof(last_proof,proof,difficulty):
-    
+
     difficultyZeros = ""
     for x in range(difficulty):
         x = "0"
