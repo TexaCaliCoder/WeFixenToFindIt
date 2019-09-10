@@ -5,8 +5,10 @@ import { Route } from 'react-router-dom';
 
 function App() {
 	return (
-		<div className='App'>
-			<Route path='/' component={Home} />
+		<div className="wrapper">
+			<div className='App'>
+				<Route path='/' component={Home} />
+			</div>
 		</div>
 	);
 }

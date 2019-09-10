@@ -3,6 +3,10 @@ h1 {
 	text-align: center;
 }
 
+html {
+	background-image: url('./assets/background.jpg');
+}
+
 .App {
 	width: 90%;
 	margin: 0 auto;
@@ -11,15 +15,14 @@ h1 {
 }
 
 * {
-	background-image: url('./assets/background.jpg');
 	h1,
 	h2,
 	h3,
 	h4,
 	p {
 		color: white;
-    }
-    p{
-        font-size: 1.2rem;
-    }
+	}
+	p {
+		font-size: 1.2rem;
+	}
 }

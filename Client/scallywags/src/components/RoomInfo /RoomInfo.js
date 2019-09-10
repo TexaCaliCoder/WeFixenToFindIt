@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import './RoomInfo.scss';
 
 export default class RoomInfo extends Component {
     render() {
