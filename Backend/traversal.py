@@ -1,6 +1,7 @@
 import requests
 import random
 from datetime import datetime, timedelta
+import time
 
 # traversalPath = []
 # '''
@@ -20,12 +21,19 @@ def get_room_dict():
 
   return room_dict
 
-api_key = "Token 64936db353e36faa7ec880bb81331706cd4216a7"
+shop = 1
+pirate_ry = 467
+flying_shrine = 22
+ghost_shrine = 499
+speed_shrine = 461
+
+api_key = "Token 508711f53445fa67d8bdc1c97da256eacaef2e5e"
 header_info = {'Authorization': api_key}
   # "Token dccec1ad173d2abaf88b542a02095f8d93ea97df",
   # "Token 8271c9035b3a113a16111392722a7bb4d9278a2c",
-  # "Token 64936db353e36faa7ec880bb81331706cd4216a7"
-timer = {'time': 0, 'purpose': 'move purposefully'}
+  # "Token 64936db353e36faa7ec880bb81331706cd4216a7",
+  # "Token 508711f53445fa67d8bdc1c97da256eacaef2e5e"
+timer = {'time': 0, 'purpose': 'move randomly'}
 room_info = requests.get('https://lambda-treasure-hunt.herokuapp.com/api/adv/init/', headers=header_info).json()
 new_time = countdown_setup(room_info['cooldown'])
 timer['time'] = new_time
@@ -53,42 +61,106 @@ def timecheck():
 def traversal():
   # get room info to use for ```player```
   rooms_to_visit = True
+  items_onboard = []
+  global timer
+  global room_info
   ## I don't think the following in valid. We are adding the rooms in as part of decision tree
   # for rooms in room_info:
   #   visited_rooms.add(room_info[rooms]['room_id'])
   while rooms_to_visit:
 
-    global room_info
-    purpose = timer['purpose']
-    user = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/status/', headers=header_info).json()
-    timer['time'] = countdown_setup(user['cooldown'])
+    purpose = "move randomly"
 
     ## for each user, check
     ## - purpose of timer - tells us which actions we are performing
     ## - see if timer time has reached zero
+    def get_user():
+      while True:
+        if timecheck():
+          user = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/status/', headers=header_info).json()
+          time.sleep(user['cooldown'])
+          return user
+
+    def update_room_info():
+      global room_info
+      while True:
+        if timecheck():
+          room_info = requests.get('https://lambda-treasure-hunt.herokuapp.com/api/adv/init/', headers=header_info).json()
+          time.sleep(room_info['cooldown'])
+          return
 
     ## ITEM LOOKUP
 
-    while purpose == "item lookup":
-      if len(room_info['items']) == 0:
-        purpose = 'move randomly'
-      ## check the timer
-      if timecheck():
-        ## TODO get the info from our database for the room we are in
-        for item in room_info['items']:
-          item_name = {"name": item['name']}
+    def item_lookup():
+      global item_to_get
+      while True:
+        if len(room_info['items']) == 0:
+          print('there is nothing left here')
+          return
+
+        ## check the timer
+        if timecheck():
+          user = get_user()
+
+          ## TODO get the info from our database for the room we are in
+          item = room_info['items'][0]
+          item_name = {"name": item}
           pickup = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/examine/', headers=header_info, json=item_name).json()
           timer['time'] = countdown_setup(pickup['cooldown'])
+          print("there is a", pickup['name'])
           if pickup['weight'] + user['encumbrance'] <= user['strength']:
             item_to_get = pickup['name']
-            purpose = 'item get'
+            items_onboard.append(item_to_get)
+            item_get()
+            update_room_info()
           else:
-            purpose = 'find shop'
+            shop_path = shortest_path_to(shop, room_info['room_id'])
+            follow_path(room_info['room_id'], shop_path['path'])
+            print('going to sell goods')
+            sell_items()
+            return
+
+    ## ITEM GET
+    def item_get():
+      while True:
+        if timecheck():
+          received_item = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/take/', headers=header_info, json={"name":item_to_get}).json()
+          timer['time'] = countdown_setup(received_item['cooldown'])
+          print('picked up the', item_to_get)
+          return
+
+    def sell_items():
+      global timer
+      while True:
+        confirm = 'no'
+        item_to_sell = ""
+        if timecheck():
+          if len(items_onboard) == 0:
+            return
+          elif confirm == "no":
+            item_to_sell = items_onboard.pop()
+            sale = {"name": item_to_sell}
+            merchant = requests.post("https://lambda-treasure-hunt.herokuapp.com/api/adv/sell/", headers=header_info, json=sale).json()
+            timer = countdown_setup(merchant["cooldown"])
+            print('sold the', item_to_sell, merchant["messages"])
+            confirm = "yes"
+          else:
+            sale = {"name": item_to_sell, "confirm": "yes"}
+            merchant = requests.post("https://lambda-treasure-hunt.herokuapp.com/api/adv/sell/", headers=header_info, json=sale).json()
+            timer = countdown_setup(merchant["cooldown"])
+            confirm = 'no'
+
 
     while purpose == "move randomly":
+      rooms_we_have = get_room_dict()
       possible_moves = []
       c_rm = room_info
-        ## TODO add in exits info from database version of the room
+      direction_possibilities = {
+        'n': 's',
+        's': 'n',
+        'e': 'w',
+        'w': 'e'
+      }
       c_rm_n = True if 'n' in room_info['exits'] else False
       c_rm_s = True if 's' in room_info['exits'] else False
       c_rm_e = True if 'e' in room_info['exits'] else False
@@ -104,18 +176,18 @@ def traversal():
       move = random.choice(possible_moves)
 
       if timecheck():
-          new_room = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', headers=header_info, json={"direction":move}).json()
-          timer['time'] = countdown_setup(new_room['cooldown'])
-          ## TODO add post command to add the new room and add the "w" of the new room in our database to the old room id
-          ## TODO add put command to change the "e" of the old room in our database
-          purpose == "item lookup"
 
-    ## ITEM GET
-    while purpose == 'item get':
-      if timecheck():
-        received_item = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/take/', headers=header_info, json={"name":item_to_get}).json()
-        timer['time'] = countdown_setup(received_item['cooldown'])
-        purpose = 'item lookup'
+        next_room = rooms_we_have[c_rm['room_id']][move]
+        db_send = {"direction": move, "next_room_id": str(next_room)} if next_room > -1 else {"direction": move}
+        new_room = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', headers=header_info, json=db_send).json()
+        print("moved to", new_room['room_id'])
+        timer['time'] = countdown_setup(new_room['cooldown'])
+        room_info = dict(new_room)
+        if next_room == -1:
+          add_new_room(c_rm['room_id'], new_room['room_id'], {}, move, direction_possibilities[move], False)
+        purpose = "item lookup"
+        item_lookup()
+
 
     ## DIRECTION DECISION TREE
     ## check timer again
@@ -134,7 +206,6 @@ def traversal():
           visited_rooms = get_room_dict()
 
         c_rm = room_info
-        ## TODO add in exits info from database version of the room
         c_rm_n = True if 'n' in room_info['exits'] and visited_rooms[c_rm['room_id']]['n'] < 0 and visited_rooms[c_rm['room_id']]['n'] > -100 else False
         c_rm_s = True if 's' in room_info['exits'] and visited_rooms[c_rm['room_id']]['s'] < 0 and visited_rooms[c_rm['room_id']]['s'] > -100 else False
         c_rm_e = True if 'e' in room_info['exits'] and visited_rooms[c_rm['room_id']]['e'] < 0 and visited_rooms[c_rm['room_id']]['e'] > -100 else False
@@ -245,6 +316,7 @@ def traversal():
 def nearest_open_path(start):
   print('finding nearest')
   visited_paths = get_room_dict()
+  rooms_visited = set()
   queue = Queue()
   queue.enqueue({"room": start, "path": []})
   found_path = False
@@ -257,11 +329,38 @@ def nearest_open_path(start):
       path_w = [visited_paths[curr_room]['w'], 'w']
       dirs = [path_e, path_n, path_s, path_w]
       for d in dirs:
-        if d[0] > -1:
+        if d[0] > -1 and d[0] not in rooms_visited:
           new_path = {"room": d[0], "path": list(curr_path["path"])}
           new_path["path"].insert(0, d[1])
+          rooms_visited.add(d[0])
           queue.enqueue(new_path)
         elif d[0] == -1:
+          curr_path['path'].insert(0, d[1])
+          print("going this way", curr_path['path'])
+          return {"room": curr_room, "path": curr_path["path"]}
+
+def shortest_path_to(dest, start):
+  print('finding path to', dest)
+  visited_paths = get_room_dict()
+  rooms_visited = set()
+  queue = Queue()
+  queue.enqueue({"room": start, "path": []})
+  found_path = False
+  while not found_path:
+      curr_path = queue.dequeue()
+      curr_room = curr_path["room"]
+      path_n = [visited_paths[curr_room]['n'], 'n']
+      path_s = [visited_paths[curr_room]['s'], 's']
+      path_e = [visited_paths[curr_room]['e'], 'e']
+      path_w = [visited_paths[curr_room]['w'], 'w']
+      dirs = [path_e, path_n, path_s, path_w]
+      for d in dirs:
+        if d[0] != dest and d[0] > -1 and d[0] not in rooms_visited:
+          new_path = {"room": d[0], "path": list(curr_path["path"])}
+          new_path["path"].insert(0, d[1])
+          rooms_visited.add(d[0])
+          queue.enqueue(new_path)
+        elif d[0] == dest:
           curr_path['path'].insert(0, d[1])
           print("going this way", curr_path['path'])
           return {"room": curr_room, "path": curr_path["path"]}
@@ -321,6 +420,20 @@ def add_new_room(old, new, db_send, dir_trav, opp_dir_trav, room_bool):
       requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(old) + '/', json={dir_trav: new}).json()
       requests.put("https://wegunnagetit.herokuapp.com/rooms/" + str(new) + '/', json={opp_dir_trav: old}).json()
       print('changed room directions', new, '&', old)
+
+def go_shopping(start):
+    shop_path = shortest_path_to(shop, start)
+    follow_path(start, shop_path['path'])
+    ## TODO go_shopping
+    # get user info
+    # while there are items
+      # if the timer is up
+        # pop an item off
+        # sell an item
+    # go back to starting room and randomly move
+
+## TODO go to a shrine
+## TODO set check for 1000 gold and travel to Pirate Ry
 
 class Queue():
     def __init__(self):
