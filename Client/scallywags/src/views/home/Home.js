@@ -13,10 +13,19 @@ class Home extends Component {
 		this.state = {
 			room_data: [],
 			coordinates: [],
-			links: []
+			links: [],
+			current_room_info: {},
+			player_info: {},
 		};
 	}
 	componentDidMount() {
+		const data = {};
+		const options = {
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: 'Token dccec1ad173d2abaf88b542a02095f8d93ea97df',
+			},
+		};
 		axios
 			.get('https://wegunnagetit.herokuapp.com/rooms/')
 			.then((res) => {
@@ -24,6 +33,20 @@ class Home extends Component {
 				this.setState({ room_data: rooms[0], coordinates: rooms[1], links: rooms[2] });
 			})
 			.catch((err) => console.log(err));
+
+		setInterval(() => {
+			axios
+				.get('https://lambda-treasure-hunt.herokuapp.com/api/adv/init', options)
+				.then((response) => this.setState({ current_room_info: response.data }))
+				.catch((err) => console.log(err));
+		}, 7000);
+
+		setInterval(() => {
+			axios
+				.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/status', data, options)
+				.then((response) => console.log(response))
+				.catch((err) => console.log(err));
+		}, 9000);
 	}
 	render() {
 		console.log(this.state);
@@ -33,8 +56,8 @@ class Home extends Component {
 				<div className='graphContainer'>
 					<Graph className='graph' state={this.state} />
 					<div className='sideBar'>
-						<RoomInfo />
-						<PlayerStatus />
+						<RoomInfo state={this.state.current_room_info} />
+						<PlayerStatus state={this.state.player_info} />
 					</div>
 				</div>
 				<Buttons />

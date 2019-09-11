@@ -1,15 +1,16 @@
-import React, { Component } from 'react'
+import React from 'react';
 import './RoomInfo.scss';
 
-export default class RoomInfo extends Component {
-    render() {
-        return (
-            <div className="sideBlock">
-                <p>Room Name:</p>
-                <p>Room Coordinates</p>
-                <p>Items In Room:</p>
-                <p>Players In Room:</p>
-            </div>
-        )
-    }
+function RoomInfo(props) {
+    console.log(props, 'room props')
+	return(
+        <div className="sideBlock">
+            <p>Room Name:{props.state.title} </p>
+            <p>Room Coordinates: {props.state.coordinates}</p>
+            <p>Items In Room:{props.state.items}</p>
+            <p>Players In Room: {props.state.players}</p>
+        </div>
+    );
 }
+
+export default RoomInfo;
