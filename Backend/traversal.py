@@ -2,7 +2,9 @@ import requests
 import random
 from datetime import datetime, timedelta
 import time
-from util import get_room_dict, get_current_room, get_user, follow_path, shortest_path_to, nearest_open_path, add_new_room, closed_exits, Queue
+from util import follow_path, shortest_path_to, nearest_open_path, Queue
+from getters import get_room_dict, get_current_room, get_user
+from setters import add_new_room, closed_exits
 
 shop = 1
 pirate_ry = 467

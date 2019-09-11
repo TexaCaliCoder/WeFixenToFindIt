@@ -3,6 +3,9 @@ import random
 from datetime import datetime, timedelta
 import time
 
+from getters import get_room_dict
+from setters import add_new_room, closed_exits
+
 storage = "https://wegunnagetit.herokuapp.com/rooms/"
 room_db = "https://lambda-treasure-hunt.herokuapp.com/api/adv/"
 # "Token dccec1ad173d2abaf88b542a02095f8d93ea97df",
@@ -46,51 +49,6 @@ def timecheck(timer):
         return False
 
 
-# These functions serve as info getters
-# - retreives the list of known rooms and returns that in dictionary form
-def get_room_dict():
-    room_dict = {}
-    room_list = requests.get(
-        storage).json()
-    for room in room_list:
-        room_dict[room['id']] = room
-
-    return room_dict
-
-
-def get_current_room(header_info):
-    room = requests.get(room_db + 'init/', headers=header_info).json()
-    time.sleep(room['cooldown'])
-    return room
-
-
-# - retreives the current user info
-def get_user(header_info): 
-    user = requests.post(room_db + 'status/', headers=header_info).json()
-    time.sleep(user['cooldown'])
-    return user
-
-
-# This function adds room information into the database
-def add_new_room(old, new, db_send, dir_trav, opp_dir_trav, room_bool):
-    if old != new:
-        if room_bool:
-            requests.post(storage, json=db_send).json()
-            print('added room', new)
-        requests.put(storage + str(old) + '/', json={dir_trav: new}).json()
-        requests.put(storage + str(new) + '/', json={opp_dir_trav: old}).json()
-        print('changed room directions', new, '&', old)
-
-
-def closed_exits(room):
-    r_id = str(room['room_id'])
-    exits = room['exits']
-    dirs = ['n','s','e','w']
-    for door in dirs:
-        if door not in exits:
-            requests.put(storage + r_id + '/', json={door: -100})
-
-
 # Given a starting room and a list of instructions, this function follows that path
 def follow_path(start, path, header_info):
     print('following known path', path)
@@ -110,7 +68,8 @@ def follow_path(start, path, header_info):
                 this_move["next_room_id"] = str(
                     rooms_avail[start][next_dir])
         print(this_move)
-        new_room = requests.post(room_db + 'move/', headers=header_info, json=this_move).json()
+        new_room = requests.post(
+            room_db + 'move/', headers=header_info, json=this_move).json()
         time.sleep(new_room['cooldown'])
         db_send = {
             "id": new_room["room_id"],
@@ -134,6 +93,8 @@ def follow_path(start, path, header_info):
 
 # TODO nearest-path and shortest-path are both almost exactly the same
 # Finds and returns the shortest path to the nearest unknown room or hallway
+
+
 def nearest_open_path(start):
     print('finding nearest')
     visited_paths = get_room_dict()
@@ -159,7 +120,6 @@ def nearest_open_path(start):
                 curr_path['path'].insert(0, d[1])
                 print("going this way", curr_path['path'])
                 return {"room": curr_room, "path": curr_path["path"]}
-
 
 
 # Finds and returns the shortest path to a particular room number
