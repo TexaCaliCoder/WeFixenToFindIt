@@ -14,6 +14,11 @@ room_db = "https://lambda-treasure-hunt.herokuapp.com/api/adv/"
 # "Token 508711f53445fa67d8bdc1c97da256eacaef2e5e"
 api_key = "Token 508711f53445fa67d8bdc1c97da256eacaef2e5e"
 header_info = {'Authorization': api_key}
+shop = 1
+pirate_ry = 467
+flying_shrine = 22
+ghost_shrine = 499
+speed_shrine = 461
 
 # Basic Queue class
 
@@ -148,3 +153,21 @@ def shortest_path_to(dest, start):
                 curr_path['path'].insert(0, d[1])
                 print("going this way", curr_path['path'])
                 return {"room": curr_room, "path": curr_path["path"]}
+
+def sell_items(items_onboard):
+    while True:
+        confirm = 'no'
+        item_to_sell = ""
+        if len(items_onboard) == 0:
+            return
+        elif confirm == "no":
+            item_to_sell = items_onboard.pop()
+            sale = {"name": item_to_sell}
+            confirm = "yes"
+        else:
+            sale = {"name": item_to_sell, "confirm": "yes"}
+            confirm = 'no'
+        merchant = requests.post(
+            room_db + "sell/", headers=header_info, json=sale).json()
+        time.sleep(merchant['cooldown'])
+        print('sold the', item_to_sell, merchant["messages"])
