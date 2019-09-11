@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import './Buttons.scss';
+import './buttons.scss';
 import { button } from 'react-router-dom';
 
 class Buttons extends Component {
