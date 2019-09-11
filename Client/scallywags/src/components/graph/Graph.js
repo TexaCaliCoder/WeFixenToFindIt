@@ -2,27 +2,31 @@ import React, { Component } from 'react'
 import './Graph.scss';
 import { FlexibleXYPlot, XAxis, YAxis, HorizontalGridLines, LineSeries, VerticalGridLines, MarkSeries } from 'react-vis';
 
-export default class graph extends Component {
+const currentRoom = 34
+ class graph extends Component {
+     constructor(props){
+         super(props)
+     }
     render() {
+        const {coordinates, links} = this.props.state
+        console.log(this.props.state, 'state from props')
         return (
             <div className="graph">
                 <h2>Graph Will Go Here</h2>
                 <FlexibleXYPlot
-                    width={600}
+                    width={800}
                     height={600}>
-                    <HorizontalGridLines />
-                    <VerticalGridLines/>
-                    <MarkSeries
-                    strokeWidth={3}
-                    opacity = "1"
-                        data={[
-                            { x: 1, y: 1 },
-                            { x: 3, y: 5 },
-                            { x: 4, y:7 },
-                            { x: 4, y: 4},
-                            { x: 10, y: 5},
-                            { x: 2, y: 10}
-                        ]} />
+                    {links.map(item => (<LineSeries 
+                        strokeWidth='2' 
+                        color="#FFFFFF"
+                        data={item}
+                        key={Math.random() * 100}
+                    />))}
+                    {coordinates.map(item => (<MarkSeries
+                        data={[item]} 
+                        color = {item.id === currentRoom ? "#00ffff" : "ffff00" }
+                        style={{ cursor: "pointer" }}
+                    />))}
                     <XAxis />
                     <YAxis />
                 </FlexibleXYPlot>
@@ -30,3 +34,5 @@ export default class graph extends Component {
         )
     }
 }
+
+export default graph
