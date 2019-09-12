@@ -140,7 +140,7 @@ class Home extends Component {
       // </div>
       <DropdownButton id="dropdown-basic-button" title="SELECT YOUR TRAVELER">
         <Dropdown.Item
-          onClick={() => this.login()}
+          onClick={this.login}
           name="64936db353e36faa7ec880bb81331706cd4216a7"
         >
           CHRIS
