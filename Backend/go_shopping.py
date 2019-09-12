@@ -1,3 +1,4 @@
+import sys
 import requests
 import time
 import random
@@ -8,9 +9,7 @@ from setters import add_new_room, closed_exits
 def shopping(money_to_earn):
     coins = 0
     room_info = getters.get_current_room()
-    user = getters.get_user()
-    items_onboard = user['inventory'] # TODO verify that this is the correct syntax for the user items held
-    while money_to_earn > coins:
+    while int(money_to_earn) > coins:
         rooms_we_have = getters.get_room_dict()
         possible_moves = []
         c_rm = room_info
@@ -45,6 +44,11 @@ def shopping(money_to_earn):
         if next_room == -1:
             add_new_room(c_rm['room_id'], new_room['room_id'], {
             }, move, direction_possibilities[move], False)
-        items_onboard = getters.item_lookup(items_onboard)
+        getters.item_lookup()
 
 
+money_to_earn = sys.argv[1]
+
+shopping(money_to_earn)
+
+print("You have the money now")

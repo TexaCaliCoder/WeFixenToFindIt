@@ -3,7 +3,7 @@ import random
 from datetime import datetime, timedelta
 import time
 
-from getters import get_room_dict
+from getters import get_room_dict, get_user
 from setters import add_new_room, closed_exits
 
 storage = "https://wegunnagetit.herokuapp.com/rooms/"
@@ -19,6 +19,8 @@ pirate_ry = 467
 flying_shrine = 22
 ghost_shrine = 499
 speed_shrine = 461
+mine = 250
+transmog = 495
 
 # Basic Queue class
 
@@ -138,6 +140,8 @@ def shortest_path_to(dest, start):
     while not found_path:
         curr_path = queue.dequeue()
         curr_room = curr_path["room"]
+        if curr_room == dest:
+            return curr_path
         path_n = [visited_paths[curr_room]['n'], 'n']
         path_s = [visited_paths[curr_room]['s'], 's']
         path_e = [visited_paths[curr_room]['e'], 'e']
@@ -154,20 +158,17 @@ def shortest_path_to(dest, start):
                 print("going this way", curr_path['path'])
                 return {"room": curr_room, "path": curr_path["path"]}
 
-def sell_items(items_onboard):
+def sell_items():
+    user = get_user()
+    items_onboard = list(filter(lambda item : 'treasure' in item, user['inventory'] ))
+    item_to_sell = ""
     while True:
-        confirm = 'no'
-        item_to_sell = ""
         if len(items_onboard) == 0:
             return
-        elif confirm == "no":
-            item_to_sell = items_onboard.pop()
-            sale = {"name": item_to_sell}
-            confirm = "yes"
-        else:
-            sale = {"name": item_to_sell, "confirm": "yes"}
-            confirm = 'no'
+        item_to_sell = items_onboard.pop()
+        sale = {"name": item_to_sell, 'confirm': 'yes'}
+        print('treasure is', sale)
         merchant = requests.post(
             room_db + "sell/", headers=header_info, json=sale).json()
         time.sleep(merchant['cooldown'])
-        print('sold the', item_to_sell, merchant["messages"])
+        print('sold the', item_to_sell)

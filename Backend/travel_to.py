@@ -1,5 +1,7 @@
 import requests
+import sys
 from util import shortest_path_to, follow_path, header_info, Queue
+from getters import get_current_room
 
 start = 495
 
@@ -11,7 +13,16 @@ speed_shrine = 461
 mine = 250
 transmog = 495
 
-path = shortest_path_to(mine, start)
+if len(sys.argv) > 1:
+    sys.argv[1]
+else:
+    print("Please include a room to travel to")
+    exit()
+
+dest = int(sys.argv[1])
+start = get_current_room()['room_id']
+
+path = shortest_path_to(dest, start)
 
 follow_path(start, path['path'], header_info)
 

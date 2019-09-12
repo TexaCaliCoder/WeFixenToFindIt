@@ -29,12 +29,12 @@ def get_user():
     return user
 
 
-def item_lookup(items_onboard):
+def item_lookup():
     while True:
         room_info = get_current_room()
         if len(room_info['items']) == 0:
             print('there is nothing left here')
-            return items_onboard
+            return 
 
         user = get_user()
 
@@ -45,14 +45,13 @@ def item_lookup(items_onboard):
         time.sleep(pickup['cooldown'])
         print("there is a", pickup['name'])
         if pickup['weight'] + user['encumbrance'] <= user['strength']:
-            items_onboard.append(pickup['name'])
             item_get(pickup['name'])
         else:
             shop_path = util.shortest_path_to(util.shop, room_info['room_id'])
             util.follow_path(room_info['room_id'],
                         shop_path['path'], util.header_info)
             print('going to sell goods')
-            util.sell_items(items_onboard)
+            util.sell_items()
             return []
 
 
