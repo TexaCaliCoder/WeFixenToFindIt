@@ -12,7 +12,6 @@ const currentRoom = 34
         console.log(this.props.state, 'state from props')
         return (
             <div className="graph">
-                <h2>Graph Will Go Here</h2>
                 <FlexibleXYPlot
                     width={800}
                     height={600}>

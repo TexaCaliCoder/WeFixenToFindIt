@@ -8,7 +8,7 @@ function RoomInfo(props) {
             <p>Room Name:{props.state.title} </p>
             <p>Room Coordinates: {props.state.coordinates}</p>
             <p>Items In Room:{props.state.items}</p>
-            <p>Players In Room: {props.state.players}</p>
+            <p>Players In Room: {props.state.players}:</p>
         </div>
     );
 }

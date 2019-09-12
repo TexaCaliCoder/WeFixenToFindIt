@@ -5,11 +5,11 @@ function PlayerStatus(props) {
     console.log(props, 'player status props')
     return (
         <div className="sideBlock">
-            <p>Name:</p>
-            <p>Gold:</p>
-            <p>Encumbrance:</p>
-            <p>Speed:</p>
-            <p>Inventory:</p>
+            <p>Name:{props.state.name}</p>
+            <p>Gold:{props.state.gold}</p>
+            <p>Encumbrance:{props.state.encumbrance}</p>
+            <p>Speed:{props.state.speed}</p>
+            <p>Inventory:{props.state.inventory}</p>
         </div>
     )
 }

@@ -8,3 +8,18 @@
 .sideBar{
     width: 30%;
 }
+
+.directionButton{
+    width: 100px;
+    height: 50px;
+    margin: 20px;
+    background: blue;
+    color: white;
+    font-size: 1.4rem;
+}
+
+.buttonBar{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}

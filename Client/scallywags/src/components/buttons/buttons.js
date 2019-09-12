@@ -10,6 +10,7 @@ class Buttons extends Component {
                 <button className="directionButton">South</button>
                 <button className="directionButton">East</button>
                 <button className="directionButton">West</button>
+                <button className="directionButton">Logout</button>
 			</div>
 		);
 	}
