@@ -76,7 +76,7 @@ class Home extends Component {
     const options = {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: "Token 508711f53445fa67d8bdc1c97da256eacaef2e5e"
+        Authorization: `Token ${this.state.api_key}`
       }
     };
     const body = JSON.stringify({
@@ -125,7 +125,7 @@ class Home extends Component {
   };
 
   login = e => {
-    console.log('click');
+    console.log('click', e.target);
     const name = e.target.name;
     this.setState({ api_key: name, login: true });
     this.updateState();
