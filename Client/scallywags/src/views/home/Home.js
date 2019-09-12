@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Dropdown, DropdownButton } from 'react-bootstrap';
+import { Dropdown, DropdownButton, Button } from 'react-bootstrap';
 import './Home.scss';
 import Graph from '../../components/graph/Graph';
 import PlayerStatus from '../../components/PlayerStatus/PlayerStatus';
@@ -18,7 +18,8 @@ class Home extends Component {
       player_info: {},
       api_key: '508711f53445fa67d8bdc1c97da256eacaef2e5e',
       login: true,
-      cooldown: 1000
+      cooldown: 0,
+      grey: false
     };
   }
   componentDidMount() {
@@ -42,7 +43,8 @@ class Home extends Component {
       .then(response =>
         this.setState({
           player_info: response.data,
-          cooldown: response.data.cooldown * 1000 + 5
+          cooldown: response.data.cooldown * 1000 + 5,
+          grey: false
         })
       )
       .catch(err => console.log(err));
@@ -60,10 +62,12 @@ class Home extends Component {
       .then(response => {
         this.setState({
           current_room_info: response.data,
-          cooldown: response.data.cooldown * 1000 + 5
+          cooldown: response.data.cooldown * 1000 + 5,
+          grey: false
         });
         setTimeout(() => {
           this.playerStatus();
+          this.setState({cooldown: 0})
         }, this.state.cooldown);
       })
       .catch(err => console.log(err));
@@ -92,7 +96,8 @@ class Home extends Component {
       .then(response => {
         this.setState({
           current_room_info: response.data,
-          cooldown: response.data.cooldown * 1000 + 500
+          cooldown: response.data.cooldown * 1000 + 500,
+          grey: false
         });
         console.log('response', response.data);
       })
@@ -121,6 +126,7 @@ class Home extends Component {
 
     setTimeout(() => {
       this.currRoom();
+      this.setState({cooldown: 0})
     }, this.state.cooldown);
   };
 
@@ -131,8 +137,18 @@ class Home extends Component {
     this.updateState();
   };
 
+  greyButtons = () => {
+    setTimeout(() => {
+      this.setState({cooldown: 0, grey: true})
+    }, this.state.cooldown)
+  }
+
   render() {
     console.log(this.state);
+
+    if (this.state.cooldown > 0) {
+      this.greyButtons()
+    }
 
     return !this.state.login ? (
       // <div>
@@ -175,24 +191,24 @@ class Home extends Component {
           </div>
         </div>
         <div className="buttonBar">
-          <button className="directionButton" name="n" onClick={this.moveRooms}>
+          <Button className="directionButton" disabled={!this.state.grey} name="n" onClick={this.moveRooms}>
             North
-          </button>
-          <button className="directionButton" name="s" onClick={this.moveRooms}>
+          </Button>
+          <Button className="directionButton" disabled={!this.state.grey} name="s" onClick={this.moveRooms}>
             South
-          </button>
-          <button className="directionButton" name="e" onClick={this.moveRooms}>
+          </Button>
+          <Button className="directionButton" disabled={!this.state.grey} name="e" onClick={this.moveRooms}>
             East
-          </button>
-          <button className="directionButton" name="w" onClick={this.moveRooms}>
+          </Button>
+          <Button className="directionButton" disabled={!this.state.grey} name="w" onClick={this.moveRooms}>
             West
-          </button>
-          <button
-            className="directionButton"
+          </Button>
+          <Button
+            className="directionButton" disabled={!this.state.grey}
             onClick={() => this.setState({ login: false })}
           >
             Logout
-          </button>
+          </Button>
         </div>
       </div>
     );
