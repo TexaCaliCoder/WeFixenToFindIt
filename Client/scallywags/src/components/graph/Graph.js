@@ -36,6 +36,7 @@ class graph extends Component {
           {coordinates.map(item => (
             <MarkSeries
               data={[item]}
+              name={item.id}
               size={
                 item.id === currentRoom
                   ? 10
@@ -58,6 +59,7 @@ class graph extends Component {
                   ? '1b00ff'
                   : 'ffff00'
               }
+              onSeriesClick = {() => console.log(item.id)}
               style={{ cursor: 'pointer' }}
             />
           ))}
