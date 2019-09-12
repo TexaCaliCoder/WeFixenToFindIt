@@ -2,7 +2,7 @@ import './PlayerStatus.scss'
 import React from 'react'
 
 function PlayerStatus(props) {
-    console.log(props, 'player status props')
+  
     return (
         <div className="sideBlock">
             <p>Name:{props.state.name}</p>

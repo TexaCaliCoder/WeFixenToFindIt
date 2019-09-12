@@ -37,6 +37,7 @@ class graph extends Component {
             <MarkSeries
               data={[item]}
               name={item.id}
+              key={item.id}
               size={
                 item.id === currentRoom
                   ? 10

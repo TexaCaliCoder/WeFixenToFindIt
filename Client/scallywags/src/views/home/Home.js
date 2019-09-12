@@ -87,7 +87,6 @@ class Home extends Component {
       direction: e.target.name,
       next_room_id: secondary
     });
-    console.log(options, body, 'Here');
     axios
       .post(
         'https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', body,
@@ -99,7 +98,6 @@ class Home extends Component {
           cooldown: response.data.cooldown * 1000 + 500,
           grey: false
         });
-        console.log('response', response.data);
       })
       .catch(err => console.log(err));
   };
@@ -131,7 +129,6 @@ class Home extends Component {
   };
 
   login = e => {
-    console.log('click', e.target);
     const name = e.target.name;
     this.setState({ api_key: name, login: true });
     this.updateState();
@@ -144,8 +141,6 @@ class Home extends Component {
   }
 
   render() {
-    console.log(this.state);
-
     if (this.state.cooldown > 0) {
       this.greyButtons()
     }

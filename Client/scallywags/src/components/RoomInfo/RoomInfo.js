@@ -2,7 +2,7 @@ import React from 'react';
 import './RoomInfo.scss';
 
 function RoomInfo(props) {
-    console.log(props, 'room props')
+  
 	return(
         <div className="sideBlock">
             <p>Room Name:{props.state.title} </p>
