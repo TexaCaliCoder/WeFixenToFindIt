@@ -3,7 +3,7 @@ import {Dropdown, DropdownButton} from 'react-bootstrap';
 import './Home.scss';
 import Graph from '../../components/graph/Graph';
 import PlayerStatus from '../../components/PlayerStatus/PlayerStatus';
-import RoomInfo from '../../components/RoomInfo /RoomInfo';
+import RoomInfo from '../../components/RoomInfo/RoomInfo';
 import axios from 'axios';
 import helper from './helper';
 
@@ -18,7 +18,7 @@ class Home extends Component {
 			links: [],
 			current_room_info: {},
 			player_info: {},
-			api_key: '508711f53445fa67d8bdc1c97da256eacaef2e5e', 
+			api_key: '508711f53445fa67d8bdc1c97da256eacaef2e5e',
 			login:true,
 			cooldown: 1000
 		};
@@ -26,9 +26,9 @@ class Home extends Component {
 	componentDidMount() {
 		this.updateState();
 	}
-	
-	
-	
+
+
+
 	playerStatus = () => {
 		const data = {};
         const options = {
@@ -56,7 +56,7 @@ class Home extends Component {
 					this.setState({ current_room_info: response.data , cooldown: response.data.cooldown * 1000 + 5})
 						setTimeout(() => {
 							this.playerStatus();
-							
+
 						}, this.state.cooldown)
 				})
 				.catch((err) => console.log(err));
@@ -80,8 +80,8 @@ class Home extends Component {
 			.then((response) => {
 				this.setState({ current_room_info: response.data , cooldown: response.data.cooldown * 1000 + 500})
 				console.log('response', response.data)
-				
-				
+
+
 			})
 			.catch((err) => console.log(err));
 	}
@@ -115,13 +115,13 @@ class Home extends Component {
 		this.setState({api_key: name , login: true})
 		this.updateState();
 	}
-	
+
 
 	render() {
 		console.log(this.state);
 
 		return !this.state.login ? (
-			// <div> 
+			// <div>
 			// 	<Dropdown options={options} onChange={(option) => {this.setState({api_key: option.label, login: true})}} />
 			// </div>
 			<DropdownButton id="dropdown-basic-button" title="SELECT YOUR TRAVELER">
@@ -149,7 +149,7 @@ class Home extends Component {
                     </div>
 			</div>
 		)
-		
+
 	}
 }
 
