@@ -3,8 +3,9 @@ h1 {
 	text-align: center;
 }
 
-html {
-	background-image: url('./assets/background.jpg');
+
+.wrapper{
+    background-image: url('./assets/background.jpg');
 }
 
 .App {
@@ -12,7 +13,6 @@ html {
 	margin: 0 auto;
 	border: 3px solid blue;
     height: 95vh;
-    background-image: url('./assets/background.jpg');
 }
 
 * {
