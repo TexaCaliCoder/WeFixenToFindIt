@@ -13,9 +13,7 @@ speed_shrine = 461
 mine = 250
 transmog = 495
 
-if len(sys.argv) > 1:
-    sys.argv[1]
-else:
+if len(sys.argv) == 1:
     print("Please include a room to travel to")
     exit()
 
