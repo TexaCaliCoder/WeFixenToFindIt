@@ -20,7 +20,8 @@ class Home extends Component {
       api_key: '508711f53445fa67d8bdc1c97da256eacaef2e5e',
       login: true,
       cooldown: 0,
-      grey: false
+      grey: false,
+      spec_cd:0
     };
   }
   componentDidMount() {
@@ -74,26 +75,31 @@ class Home extends Component {
       .catch(err => console.log(err));
   };
 
-  TravelTo = (dirArr) =>{
-    let timerUp = true
-    let running = dirArr.length
-    let count = 0
-    while (running > 0 || count < 50000) {
-      if (timerUp) {
-        const dir = dirArr.shift()
-        this.moveRooms({target:{name:dir}})
-        this.forceUpdate()
-        timerUp = false
-        setTimeout(() => {
-          console.log("updated")
-          timerUp = true
-        }, 11000)
-        running--
-        console.log(running)
-      }
-      count++
-
+  TravelTo = async (dirArr) =>{
+    for (let i in dirArr) {
+      const dir = dirArr[i]
+      const wut = await this.moveRooms({target: {name:dir}})
+      console.log("one down")
     }
+    console.log('done')
+
+
+    // let timerUp = true
+    // let running = dirArr.length
+    // let count = 0
+    // while (running > 0) {
+    //   if (timerUp) {
+    //     const dir = dirArr.shift()
+    //     this.moveRooms({target:{name:dir}})
+    //     timerUp = false
+    //     setTimeout(() => {
+    //       console.log("updated")
+    //       timerUp = true
+    //     }, this.state.spec_cd)
+    //     running--
+    //     console.log(running)
+    //   }
+    // }
     // let count = 0
     //    dirArr.forEach(async dir => {
     //     // let obj = {target:{name:dir}}
@@ -127,7 +133,8 @@ class Home extends Component {
         this.setState({
           current_room_info: response.data,
           cooldown: response.data.cooldown * 1000 + 500,
-          grey: false
+          grey: false,
+          spec_cd: response.data.cooldown * 1000 + 50
         });
       })
       .catch(err => console.log(err));
