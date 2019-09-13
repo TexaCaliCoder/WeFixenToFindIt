@@ -27,3 +27,4 @@ export default function (rooms) {
   }
   return [roomObj, coord, links]
 }
+

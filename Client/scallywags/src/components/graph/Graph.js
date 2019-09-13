@@ -24,7 +24,7 @@ class graph extends Component {
     const color = 'fff000';
     return (
       <div className="graph">
-        <FlexibleXYPlot width={800} height={600}>
+        <FlexibleXYPlot width={950} height={700}>
           {links.map(item => (
             <LineSeries
               strokeWidth="2"
@@ -60,7 +60,7 @@ class graph extends Component {
                   ? '1b00ff'
                   : 'ffff00'
               }
-              onSeriesClick = {() => console.log(item.id)}
+              onValueClick = {(val, e) => this.props.travel(val)}
               style={{ cursor: 'pointer' }}
             />
           ))}

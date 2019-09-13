@@ -1,29 +1,40 @@
-h1 {
-	font-size: 2.4rem;
-	text-align: center;
+*{
+    font-family: 'New Rocker', cursive;
 }
-
 
 .wrapper{
-    background-image: url('./assets/background.jpg');
+     background-image: url('./assets/background.jpg');
 }
+
+
+
+
 
 .App {
 	width: 90%;
 	margin: 0 auto;
-	border: 3px solid blue;
-    height: 95vh;
+    height: 100vh;
+   
 }
+
 
 * {
 	h1,
 	h2,
 	h3,
-	h4,
-	p {
-		color: white;
-	}
-	p {
-		font-size: 1.2rem;
+    h4
+    {
+     color:#192CA6;
+
+    }
+
+    h1{
+        font-size: 3rem;
+        text-align: center;
+    }
+    
+    p {
+        color: white;
+        font-size: 1.5rem;
 	}
 }

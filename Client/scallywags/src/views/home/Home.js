@@ -6,6 +6,7 @@ import PlayerStatus from '../../components/PlayerStatus/PlayerStatus';
 import RoomInfo from '../../components/RoomInfo/RoomInfo';
 import axios from 'axios';
 import helper from './helper';
+import travel from './travel_helper';
 
 class Home extends Component {
   constructor(props) {
@@ -72,6 +73,18 @@ class Home extends Component {
       })
       .catch(err => console.log(err));
   };
+
+  TravelTo = (dirArr) =>{
+    const count = 0
+       dirArr.forEach(async dir => {
+        // let obj = {target:{name:dir}}
+         await this.moveRooms({target:{name:dir}})
+         console.log(count)
+         count ++
+    });
+
+    console.log("hope I didn't just screw myself!!!")
+}
 
   moveRooms = e => {
     const secondary = this.state.room_data[
@@ -140,6 +153,11 @@ class Home extends Component {
     }, this.state.cooldown)
   }
 
+  travelPath = (val) => {
+    const path = travel(this.state.current_room_info.room_id, val.id, this.state.room_data)
+    console.log(path)
+  }
+
   render() {
 
     if (this.state.cooldown > 0) {
@@ -182,10 +200,10 @@ class Home extends Component {
         </Dropdown.Item>
       </DropdownButton>
     ) : (
-      <div>
+      <div className="homeWrapper">
         <h1>Lambda Treasure Hunt</h1>
         <div className="graphContainer">
-          <Graph className="graph" state={this.state} />
+          <Graph className="graph" state={this.state} travel={this.travelPath} />
           <div className="sideBar">
             <RoomInfo state={this.state.current_room_info} />
             <PlayerStatus state={this.state.player_info} />
