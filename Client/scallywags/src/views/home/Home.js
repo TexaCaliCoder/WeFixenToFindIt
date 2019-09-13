@@ -11,7 +11,7 @@ class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      room_data: [],
+      room_data: {},
       coordinates: [],
       links: [],
       current_room_info: {},
@@ -141,8 +141,14 @@ class Home extends Component {
   }
 
   render() {
+
     if (this.state.cooldown > 0) {
       this.greyButtons()
+    }
+    let this_room = {}
+    if (Object.entries(this.state.room_data).length > 1) {
+      const curr_id = this.state.current_room_info.room_id
+      this_room = this.state.room_data[curr_id]
     }
 
     return !this.state.login ? (
@@ -186,16 +192,16 @@ class Home extends Component {
           </div>
         </div>
         <div className="buttonBar">
-          <Button className="directionButton" disabled={!this.state.grey} name="n" onClick={this.moveRooms}>
+          <Button className="directionButton" disabled={!this.state.grey || this_room.n < 0} name="n" onClick={this.moveRooms}>
             North
           </Button>
-          <Button className="directionButton" disabled={!this.state.grey} name="s" onClick={this.moveRooms}>
+          <Button className="directionButton" disabled={!this.state.grey || this_room.s < 0} name="s" onClick={this.moveRooms}>
             South
           </Button>
-          <Button className="directionButton" disabled={!this.state.grey} name="e" onClick={this.moveRooms}>
+          <Button className="directionButton" disabled={!this.state.grey || this_room.e < 0} name="e" onClick={this.moveRooms}>
             East
           </Button>
-          <Button className="directionButton" disabled={!this.state.grey} name="w" onClick={this.moveRooms}>
+          <Button className="directionButton" disabled={!this.state.grey || this_room.w < 0} name="w" onClick={this.moveRooms}>
             West
           </Button>
           <Button
