@@ -20,7 +20,7 @@ export default function (start, dest, room_obj) {
       // console.log(d[0] > -1, !(rooms_visited.has(d[0])))
       if (d[0] > -1 && !(rooms_visited.has(d[0]))) {
         const new_path = {room:d[0], path: [...curr_path.path]}
-        new_path.path.unshift(d[1])
+        new_path.path.push(d[1])
         rooms_visited.add(d[0])
         queue.push(new_path)
       }

@@ -75,15 +75,33 @@ class Home extends Component {
   };
 
   TravelTo = (dirArr) =>{
-    const count = 0
-       dirArr.forEach(async dir => {
-        // let obj = {target:{name:dir}}
-         await this.moveRooms({target:{name:dir}})
-         console.log(count)
-         count ++
-    });
+    let timerUp = true
+    let running = dirArr.length
+    let count = 0
+    while (running > 0 || count < 50000) {
+      if (timerUp) {
+        const dir = dirArr.shift()
+        this.moveRooms({target:{name:dir}})
+        this.forceUpdate()
+        timerUp = false
+        setTimeout(() => {
+          console.log("updated")
+          timerUp = true
+        }, 11000)
+        running--
+        console.log(running)
+      }
+      count++
 
-    console.log("hope I didn't just screw myself!!!")
+    }
+    // let count = 0
+    //    dirArr.forEach(async dir => {
+    //     // let obj = {target:{name:dir}}
+    //      console.log(count)
+    //      count ++
+    // });
+
+    // console.log("hope I didn't just screw myself!!!")
 }
 
   moveRooms = e => {
@@ -155,7 +173,7 @@ class Home extends Component {
 
   travelPath = (val) => {
     const path = travel(this.state.current_room_info.room_id, val.id, this.state.room_data)
-    console.log(path)
+    this.TravelTo(path)
   }
 
   render() {
