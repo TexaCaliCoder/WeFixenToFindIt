@@ -77,38 +77,22 @@ class Home extends Component {
 
   TravelTo = async (dirArr) =>{
     for (let i in dirArr) {
-      const dir = dirArr[i]
-      const wut = await this.moveRooms({target: {name:dir}})
-      console.log("one down")
+      const d = dirArr[i]
+      const move = await this.sleepMove(d)
+
     }
-    console.log('done')
+    alert('done')
+  }
 
+  justPause = () => {
+    return new Promise(resolve => setTimeout(resolve, 200))
+  }
 
-    // let timerUp = true
-    // let running = dirArr.length
-    // let count = 0
-    // while (running > 0) {
-    //   if (timerUp) {
-    //     const dir = dirArr.shift()
-    //     this.moveRooms({target:{name:dir}})
-    //     timerUp = false
-    //     setTimeout(() => {
-    //       console.log("updated")
-    //       timerUp = true
-    //     }, this.state.spec_cd)
-    //     running--
-    //     console.log(running)
-    //   }
-    // }
-    // let count = 0
-    //    dirArr.forEach(async dir => {
-    //     // let obj = {target:{name:dir}}
-    //      console.log(count)
-    //      count ++
-    // });
-
-    // console.log("hope I didn't just screw myself!!!")
-}
+  sleepMove = async (dir) => {
+    await this.moveRooms({target:{name:dir}})
+    await this.justPause()
+    return new Promise(resolve => setTimeout(resolve, this.state.spec_cd)).then(item => item)
+  }
 
   moveRooms = e => {
     const secondary = this.state.room_data[
@@ -124,6 +108,7 @@ class Home extends Component {
       direction: e.target.name,
       next_room_id: secondary
     });
+    console.log(body)
     axios
       .post(
         'https://lambda-treasure-hunt.herokuapp.com/api/adv/move/', body,
@@ -132,10 +117,13 @@ class Home extends Component {
       .then(response => {
         this.setState({
           current_room_info: response.data,
-          cooldown: response.data.cooldown * 1000 + 500,
+          cooldown: response.data.cooldown * 1000 + 5,
           grey: false,
-          spec_cd: response.data.cooldown * 1000 + 50
+          spec_cd: response.data.cooldown * 1000 + 5
         });
+      })
+      .then(response => {
+        console.log(response.data)
       })
       .catch(err => console.log(err));
   };
