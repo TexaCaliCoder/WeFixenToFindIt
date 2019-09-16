@@ -1,16 +1,27 @@
 import requests
-from traversal import Queue, get_room_dict, shortest_path_to, follow_path
+import sys
+from util import shortest_path_to, follow_path, header_info, Queue
+from getters import get_current_room
 
-start = 461
+start = 495
 
 shop = 1
 pirate_ry = 467
 flying_shrine = 22
 ghost_shrine = 499
 speed_shrine = 461
+mine = 250
+transmog = 495
 
-path = shortest_path_to(flying_shrine, start)
+if len(sys.argv) == 1:
+    print("Please include a room to travel to")
+    exit()
 
-follow_path(start, path['path'])
+dest = int(sys.argv[1])
+start = get_current_room()['room_id']
+
+path = shortest_path_to(dest, start)
+
+follow_path(start, path['path'], header_info)
 
 
