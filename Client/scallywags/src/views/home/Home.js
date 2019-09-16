@@ -78,7 +78,7 @@ class Home extends Component {
   TravelTo = async (dirArr) =>{
     for (let i in dirArr) {
       const d = dirArr[i]
-      const move = await this.sleepMove(d)
+      await this.sleepMove(d)
 
     }
     alert('done')
@@ -122,20 +122,10 @@ class Home extends Component {
           spec_cd: response.data.cooldown * 1000 + 5
         });
       })
-      .then(response => {
-        console.log(response.data)
-      })
       .catch(err => console.log(err));
   };
 
   updateState = () => {
-    const data = {};
-    const options = {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Token ${this.state.api_key}`
-      }
-    };
     axios
       .get('https://wegunnagetit.herokuapp.com/rooms/')
       .then(res => {

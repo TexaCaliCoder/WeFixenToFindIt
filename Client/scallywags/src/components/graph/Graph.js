@@ -4,16 +4,12 @@ import {
   FlexibleXYPlot,
   XAxis,
   YAxis,
-  HorizontalGridLines,
   LineSeries,
-  VerticalGridLines,
   MarkSeries
 } from 'react-vis';
 
 class graph extends Component {
-  constructor(props) {
-    super(props);
-  }
+
   render() {
     const { coordinates, links, current_room_info } = this.props.state;
     const currentRoom = current_room_info.room_id;
@@ -21,7 +17,7 @@ class graph extends Component {
     const pirate_ry = 467;
     const shrine = [22, 499, 461];
     const mine = 250;
-    const color = 'fff000';
+    const transmog = 495
     return (
       <div className="graph">
         <FlexibleXYPlot width={950} height={700}>
@@ -41,13 +37,9 @@ class graph extends Component {
               size={
                 item.id === currentRoom
                   ? 10
-                  : item.id === shop
+                  : item.id === shop || item.id === mine || item.id === pirate_ry || item.id === transmog || shrine.includes(item.id)
                   ? 6
-                  : item.id === mine
-                  ? 6
-                  : shrine.includes(item.id)
-                  ? 6
-                  : 3
+                  : 4
               }
               color={
                 item.id === currentRoom
@@ -56,6 +48,10 @@ class graph extends Component {
                   ? '23ff00'
                   : item.id === mine
                   ? '00fbff'
+                  : item.id === pirate_ry
+                  ? '02222f'
+                  : item.id === transmog
+                  ? 'f500ff'
                   : shrine.includes(item.id)
                   ? '1b00ff'
                   : 'ffff00'
